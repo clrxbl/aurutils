@@ -59,6 +59,7 @@ fi
 
 declare -A pkgset
 
+# ignore duplicates
 while IFS= read -r; do
     pkgset[$REPLY]=1
 done

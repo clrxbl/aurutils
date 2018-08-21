@@ -330,6 +330,40 @@ if ((build)); then
     # check if dependency graph is valid
     aur graph "$tmp_view"/*/.SRCINFO >/dev/null
 
+    # check repo dependencies (FIXME: --sysroot for containers)
+    cut -f2 "$tmp"/depends | aur repo-filter --all 2>/dev/null >"$tmp"/found_repo
+
+    # XXX: use separate files instead of cut(1)
+    cut -f1 "$tmp"/depends | cat "$tmp"/found_repo - \
+        | complement - <(cut -f2 "$tmp"/depends) >"$tmp"/foreign
+
+    # guess candidates for unknown packages and present them to the user
+    mapfile -t undeps < <(cat "$tmp"/foreign | sort -u | pacman -T -)
+
+    # avoid nested while loops in formatting text
+    if [[ ${undeps[*]} ]]; then
+        error "$argv0: virtual or missing packages"
+
+        for i in "${undeps[@]}"; do
+            origin=$(grep -w -m1 "$i" "$tmp"/depends | cut -f1)
+            msg2 "$i ($origin)"
+        done
+
+        msg "Possible providers:"
+        aur pkglist >"$tmp"/pkglist
+
+        # agrep does not support -f, has differing results with OR
+        for i in "${undeps[@]}"; do
+            agrep --show-cost --best-match "^$i" "$tmp"/pkglist | while
+                IFS=: read -r cost pkg
+            do
+                msg2 "$pkg [$RED$cost$ALL_OFF$BOLD errors]"
+            done
+        done
+
+        exit 2
+    fi
+
     if ((chroot)); then
         aur build "${build_args[@]}" -- "${makechrootpkg_args[@]}" \
             -- "${makechrootpkg_makepkg_args[@]}"
