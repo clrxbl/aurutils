@@ -17,4 +17,4 @@ __If yes to all, create a debug log:__
 $ bash -x scriptname |& tee error.log
 ```
 
-and attach it to this issue.
+and attach it to this issue, then post.
