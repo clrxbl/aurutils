@@ -25,7 +25,7 @@ Upgrade notices are posted to the
 ## USAGE
 
 Documentation is included as groff manuals. [`aur(1)`](man1/aur.1) contains a
-general overview, instructions on creating a local repository, and
+general overview, or instructions on creating a local repository, and
 several examples.
 
 ## TROUBLESHOOTING
